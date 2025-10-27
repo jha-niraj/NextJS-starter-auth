@@ -7,7 +7,7 @@ import { Role } from '@prisma/client';
 import bcrypt from "bcryptjs";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
-	adapter: PrismaAdapter(prisma),
+	adapter: PrismaAdapter(prisma) as any,
 	providers: [
 		CredentialsProvider({
 			name: "Credentials",

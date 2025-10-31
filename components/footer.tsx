@@ -1,99 +1,375 @@
-"use client"
+"use client";
 
 import Link from "next/link";
-import { Button } from "./ui/button";
+import { motion } from "framer-motion";
+import {
+    Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram, Youtube, Calendar,
+    Users, TrendingUp, Shield, Award, Ticket, ArrowUp
+} from "lucide-react";
+import { NewsletterSubscription } from "@/components/newslettersubscription";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
-const Footer = () => {
-    const footerLinks = {
-        Product: [
-            { name: "Features", href: "#features" },
-            { name: "Pricing", href: "#pricing" },
-            { name: "How it Works", href: "#how-it-works" },
-            { name: "Community", href: "#community" }
-        ],
-        Company: [
-            { name: "About Us", href: "/about" },
-            { name: "Blog", href: "/blog" },
-            { name: "Careers", href: "/careers" },
-            { name: "Contact", href: "/contact" }
-        ],
-        Support: [
-            { name: "Help Center", href: "/help" },
-            { name: "Documentation", href: "/docs" },
-            { name: "API Reference", href: "/api" },
-            { name: "Status", href: "/status" }
-        ],
-        Legal: [
-            { name: "Privacy Policy", href: "/privacy" },
-            { name: "Terms of Service", href: "/terms" },
-            { name: "Cookie Policy", href: "/cookies" },
-            { name: "GDPR", href: "/gdpr" }
-        ]
+export function OrganizerFooterSection() {
+    const handleComingSoon = (featureName: string) => {
+        toast.info("Coming Soon!", {
+            description: `${featureName} is currently under development. We'll notify you when it's ready!`,
+            duration: 3000,
+        });
     };
 
+    const quickLinks = [
+        { name: "Home", href: "/organizer" },
+        { name: "Features", href: "/organizer#features" },
+        { name: "Event Types", href: "/organizer#event-types" },
+        { name: "Pricing", href: "/organizer#certificates" },
+        { name: "Testimonials", href: "/organizer#testimonials" },
+    ];
+
+    const resources = [
+        { name: "Documentation", href: "/docs", comingSoon: true },
+        { name: "API Reference", href: "/docs/api", comingSoon: true },
+        { name: "Help Center", href: "/help", comingSoon: true },
+        { name: "Video Tutorials", href: "/tutorials", comingSoon: true },
+        { name: "Best Practices", href: "/best-practices", comingSoon: true },
+        { name: "Case Studies", href: "/case-studies", comingSoon: true },
+    ];
+
+    const eventTypes = [
+        { name: "Hackathons", href: "/organizer#event-types", icon: Calendar },
+        { name: "Job Fairs", href: "/organizer#event-types", icon: Users },
+        { name: "Cultural Events", href: "/organizer#event-types", icon: TrendingUp },
+        { name: "Workshops", href: "/organizer#event-types", icon: Shield },
+        { name: "Conferences", href: "/organizer#event-types", icon: Award },
+    ];
+
+    const company = [
+        { name: "About Us", href: "/about", comingSoon: false },
+        { name: "Contact", href: "/contact", comingSoon: false },
+        { name: "Careers", href: "/careers", comingSoon: true },
+        { name: "Press Kit", href: "/press", comingSoon: true },
+        { name: "Partners", href: "/partners", comingSoon: true },
+    ];
+
+    const legal = [
+        { name: "Privacy Policy", href: "/privacy", comingSoon: false },
+        { name: "Terms of Service", href: "/terms", comingSoon: false },
+        { name: "Cookie Policy", href: "/cookies", comingSoon: true },
+        { name: "Refund Policy", href: "/refunds", comingSoon: false },
+        { name: "Security", href: "/security", comingSoon: true },
+    ];
+
+    const socialLinks = [
+        { name: "Facebook", icon: Facebook, href: "https://facebook.com/eventeye" },
+        { name: "Twitter", icon: Twitter, href: "https://twitter.com/eventeye" },
+        { name: "LinkedIn", icon: Linkedin, href: "https://linkedin.com/company/eventeye" },
+        { name: "Instagram", icon: Instagram, href: "https://instagram.com/eventeye" },
+        { name: "YouTube", icon: Youtube, href: "https://youtube.com/@eventeye" },
+    ];
+
+    const features = [
+        { icon: Ticket, text: "100% Secure Payments" },
+        { icon: Shield, text: "24/7 Support" },
+        { icon: Award, text: "Trusted by 10,000+ Organizers" },
+    ];
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
     return (
-        <footer className="bg-neutral-900 text-white py-16">
-            <div className="container mx-auto px-4 md:px-6 max-w-7xl">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
-                    <div className="lg:col-span-2">
-                        <Link href="/" className="flex items-center gap-2 mb-4">
-                            <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                                <span className="text-white font-bold text-lg">V</span>
-                            </div>
-                            <span className="font-bold text-xl tracking-tight">ValidateX</span>
-                        </Link>
-                        <p className="text-neutral-400 mb-6 max-w-sm">
-                            Empowering innovators worldwide with blockchain-powered idea validation and community feedback.
+        <footer className="bg-gradient-to-b from-background to-muted/20 border-t border-border">
+            <div className="max-w-7xl mx-auto px-6 py-12 border-b border-border">
+                <div className="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 className="text-2xl font-bold mb-2">Stay Updated</h3>
+                        <p className="text-muted-foreground">
+                            Get the latest updates on new features, best practices, and event management tips
                         </p>
-                        <div className="flex gap-4">
-                            <Button size="sm" variant="ghost" className="p-2 hover:bg-neutral-800">
-                                <span className="sr-only">Twitter</span>
-                                🐦
-                            </Button>
-                            <Button size="sm" variant="ghost" className="p-2 hover:bg-neutral-800">
-                                <span className="sr-only">LinkedIn</span>
-                                💼
-                            </Button>
-                            <Button size="sm" variant="ghost" className="p-2 hover:bg-neutral-800">
-                                <span className="sr-only">GitHub</span>
-                                💻
-                            </Button>
-                        </div>
                     </div>
-                    {
-                        Object.entries(footerLinks).map(([category, links]) => (
-                            <div key={category}>
-                                <h3 className="font-semibold mb-4">{category}</h3>
-                                <ul className="space-y-2">
-                                    {
-                                        links.map((link) => (
-                                            <li key={link.name}>
+                    <div>
+                        <NewsletterSubscription />
+                    </div>
+                </div>
+            </div>
+            <div className="max-w-7xl mx-auto px-6 py-12">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-12">
+                    <div>
+                        <h4 className="font-semibold mb-4 text-foreground">Quick Links</h4>
+                        <ul className="space-y-3">
+                            {
+                                quickLinks.map((link) => (
+                                    <li key={link.name}>
+                                        <Link
+                                            href={link.href}
+                                            className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                                        >
+                                            {link.name}
+                                        </Link>
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-4 text-foreground">Event Types</h4>
+                        <ul className="space-y-3">
+                            {
+                                eventTypes.map((type) => (
+                                    <li key={type.name}>
+                                        <Link
+                                            href={type.href}
+                                            className="text-muted-foreground hover:text-primary transition-colors text-sm flex items-center gap-2"
+                                        >
+                                            <type.icon className="w-3 h-3" />
+                                            {type.name}
+                                        </Link>
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-4 text-foreground">Resources</h4>
+                        <ul className="space-y-3">
+                            {
+                                resources.map((link) => (
+                                    <li key={link.name}>
+                                        {
+                                            link.comingSoon ? (
+                                                <button
+                                                    onClick={() => handleComingSoon(link.name)}
+                                                    className="text-muted-foreground hover:text-primary transition-colors text-sm text-left cursor-pointer"
+                                                >
+                                                    {link.name}
+                                                </button>
+                                            ) : (
                                                 <Link
                                                     href={link.href}
-                                                    className="text-neutral-400 hover:text-white transition-colors"
+                                                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
                                                 >
                                                     {link.name}
                                                 </Link>
-                                            </li>
-                                        ))
-                                    }
-                                </ul>
-                            </div>
-                        ))
+                                            )
+                                        }
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-4 text-foreground">Company</h4>
+                        <ul className="space-y-3">
+                            {
+                                company.map((link) => (
+                                    <li key={link.name}>
+                                        {
+                                            link.comingSoon ? (
+                                                <button
+                                                    onClick={() => handleComingSoon(link.name)}
+                                                    className="text-muted-foreground hover:text-primary transition-colors text-sm text-left cursor-pointer"
+                                                >
+                                                    {link.name}
+                                                </button>
+                                            ) : (
+                                                <Link
+                                                    href={link.href}
+                                                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                                                >
+                                                    {link.name}
+                                                </Link>
+                                            )
+                                        }
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-4 text-foreground">Legal</h4>
+                        <ul className="space-y-3">
+                            {
+                                legal.map((link) => (
+                                    <li key={link.name}>
+                                        {
+                                            link.comingSoon ? (
+                                                <button
+                                                    onClick={() => handleComingSoon(link.name)}
+                                                    className="text-muted-foreground hover:text-primary transition-colors text-sm text-left cursor-pointer"
+                                                >
+                                                    {link.name}
+                                                </button>
+                                            ) : (
+                                                <Link
+                                                    href={link.href}
+                                                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                                                >
+                                                    {link.name}
+                                                </Link>
+                                            )
+                                        }
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-4 text-foreground">Legal</h4>
+                        <ul className="space-y-3">
+                            {
+                                legal.map((link) => (
+                                    <li key={link.name}>
+                                        {
+                                            link.comingSoon ? (
+                                                <button
+                                                    onClick={() => handleComingSoon(link.name)}
+                                                    className="text-muted-foreground hover:text-primary transition-colors text-sm text-left cursor-pointer"
+                                                >
+                                                    {link.name}
+                                                </button>
+                                            ) : (
+                                                <Link
+                                                    href={link.href}
+                                                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                                                >
+                                                    {link.name}
+                                                </Link>
+                                            )
+                                        }
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-4 text-foreground">Contact Us</h4>
+                        <ul className="space-y-3">
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                                <Mail className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                                <a href="mailto:support@eventeye.com" className="hover:text-primary transition-colors">
+                                    support@eventeye.com
+                                </a>
+                            </li>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                                <Phone className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                                <a href="tel:+1234567890" className="hover:text-primary transition-colors">
+                                    +1 (234) 567-890
+                                </a>
+                            </li>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                                <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                                <span>
+                                    123 Event Street<br />
+                                    Tech City, TC 12345
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-8 mb-8 border-y border-border">
+                    {
+                        features.map((feature, index) => {
+                            const IconComponent = feature.icon;
+                            return (
+                                <motion.div
+                                    key={feature.text}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, amount: 0.1 }}
+                                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                                    className="flex items-center justify-center gap-3"
+                                >
+                                    <div className="p-2 rounded-lg bg-primary/10">
+                                        <IconComponent className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <span className="font-medium text-sm">{feature.text}</span>
+                                </motion.div>
+                            );
+                        })
                     }
                 </div>
-                <hr className="border-neutral-800 mb-8" />
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-neutral-400 text-sm">
-                        © 2024 ValidateX. All rights reserved.
+                <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 border-t border-border">
+                    <div className="text-center md:text-left">
+                        <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
+                                <Calendar className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="text-xl font-bold">EventEye</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            © {new Date().getFullYear()} EventEye. All rights reserved.
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Empowering event organizers worldwide
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        {
+                            socialLinks.map((social) => {
+                                const IconComponent = social.icon;
+                                return (
+                                    <Link
+                                        key={social.name}
+                                        href={social.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-2 rounded-lg bg-card border border-border hover:border-primary hover:bg-primary/10 transition-all group"
+                                        aria-label={social.name}
+                                    >
+                                        <IconComponent className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                    </Link>
+                                );
+                            })
+                        }
+                    </div>
+                </div>
+                <div className="mt-8 pt-6 border-t border-border text-center">
+                    <p className="text-xs text-muted-foreground mb-3">Trusted Payment Partners</p>
+                    <div className="flex items-center justify-center gap-6 flex-wrap">
+                        <div className="px-4 py-2 rounded-lg bg-card border border-border text-sm font-medium text-muted-foreground">
+                            Razorpay
+                        </div>
+                        <div className="px-4 py-2 rounded-lg bg-card border border-border text-sm font-medium text-muted-foreground">
+                            Stripe
+                        </div>
+                        <div className="px-4 py-2 rounded-lg bg-card border border-border text-sm font-medium text-muted-foreground">
+                            SSL Secured
+                        </div>
+                        <div className="px-4 py-2 rounded-lg bg-card border border-border text-sm font-medium text-muted-foreground">
+                            PCI DSS Compliant
+                        </div>
+                    </div>
+                </div>
+                <div className="mt-8 border-t border-neutral-200/20 dark:border-neutral-800/20 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        © {new Date().getFullYear()} EventEye. All rights reserved.
                     </p>
-                    <p className="text-neutral-400 text-sm">
-                        Made with ❤️ for innovators worldwide
-                    </p>
+                    <div className="flex items-center gap-3">
+                        <Button
+                            onClick={scrollToTop}
+                            variant="outline"
+                            size="sm"
+                            className="border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-2xl"
+                        >
+                            <ArrowUp className="h-4 w-4 mr-1" />
+                            Back to Top
+                        </Button>
+                        <Link href="/signin?ref=organizer">
+                            <Button
+                                variant="ghost"
+                                className="text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white rounded-2xl"
+                            >
+                                Sign In
+                            </Button>
+                        </Link>
+                        <Link href="/signup?ref=organizer">
+                            <Button className="bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-black rounded-2xl font-semibold transition-all duration-200">
+                                Get Started
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
             </div>
         </footer>
     );
-};
-
-export default Footer;
+}

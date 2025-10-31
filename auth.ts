@@ -1,13 +1,13 @@
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import NextAuth from "next-auth";
+import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import NextAuth, { NextAuthOptions } from "next-auth";
 import { Role } from '@prisma/client';
 import bcrypt from "bcryptjs";
 
-export const { auth, handlers, signIn, signOut } = NextAuth({
-	adapter: PrismaAdapter(prisma) as any,
+export const authOptions: NextAuthOptions = {
+	adapter: PrismaAdapter(prisma),
 	providers: [
 		CredentialsProvider({
 			name: "Credentials",
@@ -23,8 +23,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 			},
 			async authorize(credentials) {
 				if (!credentials?.email || !credentials?.password) {
-					return null;
+					throw new Error("EMAIL_PASSWORD_REQUIRED");
 				}
+
+				console.log("Authorizing user with email:", credentials.email);
 
 				try {
 					const user = await prisma.user.findUnique({
@@ -33,8 +35,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 						}
 					});
 
-					if (!user || !user.password) {
-						return null;
+					if (!user) {
+						throw new Error("USER_NOT_FOUND");
+					}
+
+					if (!user.password) {
+						throw new Error("OAUTH_ACCOUNT");
 					}
 
 					// For special case where password is "verified" (after OTP verification)
@@ -49,74 +55,81 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 						if (freshUser && freshUser.emailVerified) {
 							return {
 								id: freshUser.id,
-								email: freshUser.email,
-								name: freshUser.name,
-								image: freshUser.image,
+								email: freshUser.email!,
+								name: freshUser.name || freshUser.email || "User",
+								image: freshUser.image || null,
 								role: freshUser.role,
-								roleExplicitlyChosen: freshUser.roleExplicitlyChosen,
-								onboardingCompleted: freshUser.onboardingCompleted,
+								emailVerified: freshUser.emailVerified ? new Date() : null,
 							};
 						} else {
-							throw new Error("Email verification not completed");
+							throw new Error("EMAIL_NOT_VERIFIED");
 						}
 					}
 
 					// Check if email is verified for regular password login
 					if (!user.emailVerified) {
-						throw new Error("Please verify your email before signing in");
+						throw new Error("EMAIL_NOT_VERIFIED");
 					}
 
-					// Regular password check
+					// Regular password check using bcryptjs
 					const isPasswordValid = await bcrypt.compare(credentials.password as string, user.password);
+					console.log("Password Valid: " + isPasswordValid);
 
 					if (!isPasswordValid) {
-						return null;
+						throw new Error("INVALID_CREDENTIALS");
 					}
 
 					return {
 						id: user.id,
-						email: user.email,
-						name: user.name,
-						image: user.image,
+						email: user.email!,
+						name: user.name || user.email || "User",
+						image: user.image || null,
 						role: user.role,
-						roleExplicitlyChosen: user.roleExplicitlyChosen,
+						emailVerified: user.emailVerified ? new Date() : null,
 					};
 				} catch (error) {
 					console.error("Authorization error:", error);
-					throw new Error(error instanceof Error ? error.message : "Authentication failed");
+					// Re-throw the error to be handled by NextAuth
+					throw error;
 				}
 			}
 		}),
 		GoogleProvider({
 			clientId: process.env.GOOGLE_CLIENT_ID || "",
-			clientSecret: process.env.GOOGLE_SECRET_ID || ""
+			clientSecret: process.env.GOOGLE_SECRET_ID || "",
+			authorization: {
+				params: {
+					scope: "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
+				},
+			},
 		}),
 	],
 	callbacks: {
-		async jwt({ token, user, trigger, session }) {
+		async jwt({ token, user, trigger }) {
+			// Only add user data on initial sign in
 			if (user) {
 				token.id = user.id!;
 				token.role = user.role;
-				token.roleExplicitlyChosen = user.roleExplicitlyChosen;
+				token.emailVerified = user.emailVerified;
 			}
 
-			// Only fetch from database during session updates or when explicitly triggered
-			// This prevents Prisma from running in Edge Runtime during middleware execution
-			if (token && !token.roleExplicitlyChosen && (trigger === "update" || trigger === "signIn")) {
+			// Only fetch fresh data if explicitly triggered or if essential data is missing
+			if (trigger === 'update') {
 				try {
-					// Check if we're in Edge Runtime by trying to access process
-					if (typeof process !== 'undefined' && process.env) {
-						const dbUser = await prisma.user.findUnique({
-							where: { id: token.id as string },
-							select: { roleExplicitlyChosen: true }
-						});
-						if (dbUser) {
-							token.roleExplicitlyChosen = dbUser.roleExplicitlyChosen;
+					const dbUser = await prisma.user.findUnique({
+						where: { id: token.id as string },
+						select: {
+							emailVerified: true,
+							role: true,
 						}
+					});
+
+					if (dbUser) {
+						token.emailVerified = dbUser.emailVerified ? new Date() : null;
+						token.role = dbUser.role;
 					}
 				} catch (error) {
-					// Silently fail if running in Edge Runtime (middleware)
-					console.log("JWT callback: Skipping database query in Edge Runtime");
+					console.error('JWT callback error:', error);
 				}
 			}
 
@@ -125,8 +138,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 		async session({ session, token }) {
 			if (session.user) {
 				session.user.id = token.id as string;
-				session.user.role = token.role as Role
-				session.user.roleExplicitlyChosen = Boolean(token.roleExplicitlyChosen);
+				session.user.role = token.role as Role;
+				session.user.emailVerified = token.emailVerified ? new Date() : null;
 			}
 			return session;
 		},
@@ -137,6 +150,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 				});
 
 				if (existingUser) {
+					// Update email verification for existing Google users
 					await prisma.user.update({
 						where: {
 							email: profile?.email as string
@@ -145,22 +159,21 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 							emailVerified: new Date()
 						}
 					});
+					return true;
 				}
 
+				// For new Google users, emailVerified will be set automatically by adapter
 				return true;
 			}
 			return true;
 		},
 		async redirect({ url, baseUrl }) {
-			// If user is signing in and no specific redirect URL, go to dashboard
-			if (url.startsWith("/")) {
-				if (url === "/signin" || url === "/signup") {
-					return `${baseUrl}/dashboard`
-				}
-				return `${baseUrl}${url}`
-			}
+			// Handle callback URLs from middleware and auth dialog
+			if (url.startsWith("/")) return `${baseUrl}${url}`
 			if (new URL(url).origin === baseUrl) return url
-			return `${baseUrl}/dashboard`
+			
+			// Default redirect
+			return baseUrl
 		},
 	},
 	pages: {
@@ -183,4 +196,15 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 			},
 		},
 	},
-})
+}
+
+export default NextAuth(authOptions)
+
+// Helper function for server-side auth check (compatible with v5 syntax used in the app)
+export async function auth() {
+	const { getServerSession } = await import('next-auth/next');
+	return await getServerSession(authOptions);
+}
+
+// Export getServerSession for direct use if needed
+export { getServerSession } from 'next-auth/next';
